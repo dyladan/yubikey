@@ -1,3 +1,33 @@
+System Requirements
+===================
+
+* python 3.4 (other python versions may work but this is the one I developed it on)
+* pycrypto python package
+* sqlite3
+
+Create the sqlite3 database
+
+    CREATE TABLE keys (id PRIMARY_INDEX, key, uid, useCtr, sessionCtr);
+
+Insert your yubikey's public id, AES key, and uid into the database. useCtr and sessionCtr
+can be set to 0 and will bring themselves up to date upon the first validation.
+
+Basic Usage
+===========
+
+    import yubikey
+
+
+    def validCallback():
+        print("valid key")
+        os.exit()
+
+    def invalidCallback():
+        print("invalid key")
+
+    server = yubikey.Server(db="keys.db")
+    server.serve(validCallback, invalidCallback)
+
 module yubikey
 ==============
 

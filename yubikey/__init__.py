@@ -15,8 +15,8 @@ from yubikey.handlers import (
 logging.basicConfig(filename='yubikey.log',level=logging.DEBUG)
 
 class Server(object):
-    def __init__(self):
-        self.db = sqlite3.connect("keys.db")
+    def __init__(self, db="keys.db"):
+        self.db = sqlite3.connect(db)
 
     def serve(self, valid, invalid):
         self.sigint = signal.signal(signal.SIGINT, sigint)
