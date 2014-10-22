@@ -15,12 +15,13 @@ can be set to 0 and will bring themselves up to date upon the first validation.
 Basic Usage
 ===========
 
+    import sys
     import yubikey
 
 
     def validCallback():
         print("valid key")
-        os.exit()
+        sys.exit()
 
     def invalidCallback():
         print("invalid key")
