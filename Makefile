@@ -9,7 +9,3 @@ bin/:
 .PHONY:requirements
 requirements:
 	bin/pip install -r requirements.txt
-
-.PHONY:run
-run:
-	bin/python client.py

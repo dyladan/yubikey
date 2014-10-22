@@ -1,30 +1,56 @@
 import sqlite3
 import codecs
+import logging
+import signal
 
-from yubikey.util import decode_count
 import yubikey.util
+from yubikey.exceptions import InvalidPasswordException
+from yubikey.handlers import (
+    sigint,
+    sigstop,
+    sigtstp,
+    sigquit
+)
+
+logging.basicConfig(filename='yubikey.log',level=logging.DEBUG)
 
 class Server(object):
     def __init__(self):
         self.db = sqlite3.connect("keys.db")
 
+    def serve(self, valid, invalid):
+        self.sigint = signal.signal(signal.SIGINT, sigint)
+        self.sigquit = signal.signal(signal.SIGQUIT, sigquit)
+        self.sigtstp = signal.signal(signal.SIGTSTP, sigtstp)
+        while True:
+            try:
+                raw = input()
+                if self.validate(raw):
+                    logging.info("Processed valid key")
+                    valid()
+            except InvalidPasswordException as e:
+                invalid()
+                logging.info("Processed invalid key caught by exception (%s)" % e)
+            except EOFError as e:
+                logging.debug("EOF error")
+
+
     def validate(self, data):
-        try:
-            token = self.decrypt(data)
-            token = self.decode(token)
-        except Exception as e:
-            print(e)
-            return False
-        ## valid key so far
+        token = self.decrypt(data)
+        token = self.decode(token)
         c = self.db.cursor()
-        c.execute("SELECT uid,useCtr,sessionCtr FROM keys WHERE uid=?",(token['uid'],))
+        c.execute("""\
+            SELECT uid,useCtr,sessionCtr
+                FROM keys
+                    WHERE uid=?""",
+            (token['uid'],)
+        )
         key = c.fetchone()
         if token['useCtr'] < key[1]:
             return False
         if token['useCtr'] == key[1]:
             if token['sessionCtr'] <= key[2]:
-                raise Exception("old password")
-                return False
+                raise InvalidPasswordException("old password")
 
         c.execute("UPDATE keys SET useCtr=?,sessionCtr=? WHERE uid=?", (token['useCtr'],token['sessionCtr'],token['uid']))
         self.db.commit()
@@ -35,14 +61,14 @@ class Server(object):
     def decode(self, data):
         token = dict()
         token['uid'] = data[:12] # must match
-        token['useCtr'] = decode_count(data[12:16])
+        token['useCtr'] = yubikey.util.decode_count(data[12:16])
         token['tstp'] = data[16:22]
-        token['sessionCtr'] = decode_count(data[22:24])
+        token['sessionCtr'] = yubikey.util.decode_count(data[22:24])
         token['rnd'] = data[24:28]
         token['crc'] = data[28:32]
         token['checksum'] = yubikey.util.crc16(data) # must be f0b8
         if token['checksum'] != "0xf0b8":
-            raise Exception("Bad checksum")
+            raise InvalidPasswordException("Bad checksum")
         return token
 
     def decrypt(self, data):
@@ -50,7 +76,7 @@ class Server(object):
         data = data[12:]
         key = self.getkey(pub_id)
         if not key:
-            raise Exception("Bad public ID")
+            raise InvalidPasswordException("Bad public ID")
         dec = yubikey.util.decrypt(key, data)
         return codecs.decode(dec, 'utf-8')
 
