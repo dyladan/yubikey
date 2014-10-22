@@ -9,8 +9,27 @@ class Server(object):
         self.db = sqlite3.connect("keys.db")
 
     def validate(self, data):
-        token = self.decrypt(data)
-        print(self.decode(token))
+        try:
+            token = self.decrypt(data)
+            token = self.decode(token)
+        except Exception as e:
+            print(e)
+            return False
+        ## valid key so far
+        c = self.db.cursor()
+        c.execute("SELECT uid,useCtr,sessionCtr FROM keys WHERE uid=?",(token['uid'],))
+        key = c.fetchone()
+        if token['useCtr'] < key[1]:
+            return False
+        if token['useCtr'] == key[1]:
+            if token['sessionCtr'] <= key[2]:
+                raise Exception("old password")
+                return False
+
+        c.execute("UPDATE keys SET useCtr=?,sessionCtr=? WHERE uid=?", (token['useCtr'],token['sessionCtr'],token['uid']))
+        self.db.commit()
+        return True
+
 
 
     def decode(self, data):
