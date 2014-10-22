@@ -31,11 +31,11 @@ In order to be valid an OTP must meet the following criteria:
 5. The useCtr must be greater than or equal to the last useCtr recorded for this uid
 6. If the useCtr is equal to the last recorded, the sessionCtr must be higher than the last recorded sessionCtr for this uid.
 
-### decrypt(otp)
+#### decrypt(otp)
 
 Decrypts the `otp` into the 32 character token described above.
 
-### decode(token)
+#### decode(token)
 
 Decodes a 32 character hexadecimal token, returns a dict with the following attributes:
 
@@ -46,3 +46,33 @@ Decodes a 32 character hexadecimal token, returns a dict with the following attr
 * rnd
 * crc
 * checksum - the crc16 checksum of the token (must match `0xf0b8`)
+
+yubikey.util
+===========
+
+yubikey.util.decode_count(hex)
+------------------------------
+
+Given a hexadecimal input with bytes in reverse order (as given by the yubikey token),
+return the base 10 integer value. e.g.: `0100` returns 1 and `0001` returns 256
+
+yubikey.util.group(string, num)
+-------------------------------
+
+group data into a list of strings, each of num length
+
+yubikey.util.decrypt(key, data)
+-------------------------------
+
+Given a hexadecimal AES key and hexadecimal encrypted data, return the decrypted data.
+
+yubikey.util.modhex_to_hex(data)
+--------------------------------
+
+Decode data from modhex to hexadecimal
+
+yubikey.util.crc16(data)
+------------------------
+
+Return the crc16 of hexadecimal data
+
