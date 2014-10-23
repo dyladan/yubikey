@@ -29,6 +29,9 @@ Basic Usage
     server = yubikey.Server(db="keys.db")
     server.serve(validCallback, invalidCallback)
 
+MODULE DOCUMENTATION BELOW IS BROKEN FOR NOW
+============================================
+
 module yubikey
 ==============
 

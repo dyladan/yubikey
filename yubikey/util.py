@@ -17,12 +17,30 @@ def group(data, num):
 
 
 def decrypt(key, data):
-    key = codecs.decode(key, 'hex')
-    data = modhex_to_hex(data)
-    data = codecs.decode(data, 'hex')
-    aes = AES.new(key, AES.MODE_ECB)
-    dec = aes.decrypt(data)
-    return codecs.encode(dec, 'hex')
+    try:
+        key = codecs.decode(key, 'hex')
+        data = modhex_to_hex(data)
+        data = codecs.decode(data, 'hex')
+        aes = AES.new(key, AES.MODE_ECB)
+        dec = aes.decrypt(data)
+        out = codecs.encode(dec, 'hex')
+    except Exception as e:
+        return False
+
+    return out
+
+def decode(data):
+    token = dict()
+    token['uid'] = data[:12] # must match
+    token['useCtr'] = decode_count(data[12:16])
+    token['tstp'] = data[16:22]
+    token['sessionCtr'] = decode_count(data[22:24])
+    token['rnd'] = data[24:28]
+    token['crc'] = data[28:32]
+    token['checksum'] = crc16(data) # must be f0b8
+    if token['checksum'] != "0xf0b8":
+        raise InvalidPasswordException("Bad checksum")
+    return token
 
 
 def modhex_to_hex(data):
