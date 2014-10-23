@@ -1,6 +1,7 @@
 .PHONY: all
 all: virtualenv requirements
 
+.PHONY: virtualenv
 virtualenv: bin/
 
 bin/:
