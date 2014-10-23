@@ -1,13 +1,11 @@
-import logging
-
 def sigint(arg1, arg2):
-    logging.debug("received SIGINT")
+    pass
 
 def sigquit(arg1, arg2):
-    logging.debug("received SIGQUIT")
+    pass
 
 def sigtstp(arg1, arg2):
-    logging.debug("received SIGTSTP")
+    pass
 
 def sigstop(arg1, arg2):
-    logging.debug("recieved SIGSTOP")
+    pass

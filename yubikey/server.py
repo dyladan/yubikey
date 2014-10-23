@@ -1,6 +1,5 @@
 import sqlite3
 import codecs
-import logging
 import signal
 import os
 
@@ -15,7 +14,6 @@ from yubikey.handlers import (
 
 from yubikey.token import Token
 
-logging.basicConfig(filename='yubikey.log',level=logging.DEBUG)
 
 class Server(object):
     def __init__(self, db="keys.db"):
@@ -31,16 +29,12 @@ class Server(object):
                 raw = input()
                 token = Token(raw)
                 if self.validate(token):
-                    logging.info("Processed valid key")
                     valid()
                 else:
-                    logging.info("invalid key")
                     invalid()
             except InvalidPasswordException as e:
                 invalid()
-                logging.info("Processed invalid key caught by exception (%s)" % e)
             except EOFError as e:
-                logging.debug("EOF error")
             finally:
                 self.close()
 
